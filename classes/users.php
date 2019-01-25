@@ -43,10 +43,13 @@ class token_user {
     public function checkInstalled() {
         $required_tables = array (
             DIGIID_TBL_PREFIX . 'users' => '
-                CREATE TABLE `' . DIGIID_TBL_PREFIX . 'users` (
+                CREATE TABLE `' . DIGIID_TBL_PREFIX . "users` (
                     `addr` varchar(46) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
-                    `fio` varchar(60) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8'
+                    `fio` varchar(60) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
+                    `isadmin` int(1) NOT NULL DEFAULT '0' COMMENT 'User is an Admin?',
+                    `ispermitted` int(1) NOT NULL DEFAULT '0' COMMENT 'User is permitted to access?',
+                    PRIMARY KEY (`addr`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8"
         );
 
         foreach ($required_tables as $name => $sql) {
