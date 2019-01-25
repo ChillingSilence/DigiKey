@@ -130,7 +130,7 @@ $permissions = $user->get_permissions();
 	<?php if ($permissions[isadmin] == 1) { echo "You're an admin! You can authorize additional users once they've performed an initial log-in.<br />"; } ?>
 	<?php if ($permissions[isadmin] == 1) {
 		$pending_requests = $user->get_pending_requests();
-		print_r($pending_request[fio]);
+		print_r($pending_request);
 		if (strlen($pending_request[fio] > 1)) {
 			// There must be a user who wants access so we do them one at a time
 			// We do it this way for two reasons:

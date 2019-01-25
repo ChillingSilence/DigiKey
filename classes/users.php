@@ -146,12 +146,8 @@ class token_user {
      * @return array
      */
     public function get_pending_requests() {
-        $result = $this->_mysqli->query($sql = sprintf("SELECT addr,fio FROM " . DIGIID_TBL_PREFIX . "users WHERE ispermitted='0'", $this->_mysqli->real_escape_string($this->addr)));
-        if($result) {
-            $row = $result->fetch_assoc();
-            if(count($row)) return $row;
-        }
-        return false;
+        $query = $this->_mysqli->query(sprintf("SELECT addr,fio FROM " . DIGIID_TBL_PREFIX . "users WHERE ispermitted='0'"));
+        return mysqli_fetch_all($query,MYSQLI_ASSOC);
     }
 
     /**
