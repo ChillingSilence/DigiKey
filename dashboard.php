@@ -18,7 +18,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE
+SOFTWARE.
+
 */
 
 session_start();
@@ -41,12 +42,6 @@ $user = new token_user($_SESSION['user']['address']);
 $permissions = $user->get_permissions();
 
 
-// Request permissions
-// Need to add if-statement here so it only does shit when they want to change
-if ($permissions[ispermitted] == 0) {
-	$user->requestaccess ($address);
-	}
-
 
 
 
@@ -62,7 +57,7 @@ if ($permissions[ispermitted] == 0) {
     <meta name="author" content="">
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
 
-    <title>Digi-ID demo site</title>
+    <title>DigiKey authentication</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
@@ -104,34 +99,55 @@ if ($permissions[ispermitted] == 0) {
 
           <div class="inner cover">
             <h1 class="cover-heading">Hello, <?= $user_info['fio']; ?>!</h1>
-
-            <p class="lead">Your address: <?= $address ?></p>
+		<?php
+		// We show the user their Digi-ID address, but clarify it's for this site
+		// I don't have a real use for this at present but in-future we may need it so it's here for now
+		// The theory being if we have two Johns who sign up at once we could always show the Admin the Digi-ID at the same time to avoid any ambiguity?
+		// That said the user could just request that we "forget" their account, and sign up again using an additional identifier such as a surname if it was really an issue
+		// It's fine for now though :)
+		?>
+            <p class="lead">Your Digi-ID for this site:<br /><?= $address ?></p>
 
             <p class="lead" style="margin-top: 40px">
 		<?php
-		if ($permissions[ispermitted] == 0) { echo "<a href='dashboard.php' class='btn btn-lg btn-default'>Request access permission</a>"; }
-		if ($permissions[ispermitted] == 1) { echo "You are currently pending access, please speak with the owner to have them grant permission"; }
-		if ($permissions[ispermitted] == 2) { echo "<a href='dashboard.php' class='btn btn-lg btn-default'>Unlock the door</a>"; }
-		else { echo "Sorry your request for permission has been denied."; }
-
+		if ($permissions[ispermitted] == 0) {
+			echo "Your access request is pending approval by an administrator. Please ask your admin to approve / deny your request";
+			}
+		else if ($permissions[ispermitted] == 1) {
+			// We only have the one "unlock" at present with unlock.php automatically firing the unlock mechanism, but this can easily be modified in future for further expansion / multiple doors
+			// This could probably be done on this page itself, but I have a feeling that making it a new page will be better for extensibility in-future
+			echo "<a href='unlock.php' class='btn btn-lg btn-default'>Unlock the door</a>";
+			}
+		else {
+			// Presume the user has been rejected because anything other than 1 or 2 is a no-go
+			echo "Sorry your request for permission has been denied.";
+			}
 		?>
 
             </p>
 
 	<p class="lead" style="margin-top: 40px">
-	<?php if ($permissions[isadmin] == 1) { echo "You're an admin! You can authorize additional users if they request permission once they're logged in.<br />"; } ?>
+	<?php if ($permissions[isadmin] == 1) { echo "You're an admin! You can authorize additional users once they've performed an initial log-in.<br />"; } ?>
 	<?php if ($permissions[isadmin] == 1) {
 		$pending_requests = $user->get_pending_requests();
-		echo "<br />Would you like to allow " . $pending_requests[fio] ." access?<br /><br />";
-		echo "<a href='authorize.php' class='btn btn-lg'>Authorize</a>";
-		echo "<a href='authorize.php' class='btn btn-lg btn-default'>Reject</a>";
+		print_r($pending_request[fio]);
+		if (strlen($pending_request[fio] > 1)) {
+			// There must be a user who wants access so we do them one at a time
+			// We do it this way for two reasons:
+			// #1 I'm lazy and can't be bothered making the code through all of them at once
+			// #2 It looks better from a UI perspective at this point and again, I'm too lazy to fit it all in on one page
+			echo "<br />Would you like to allow " . $pending_requests[fio] ." access?<br /><br />";
+			// Authorize the user, could probably be done on this page but filler link for now
+			echo "<a href='authorize.php' class='btn btn-lg'>Authorize</a>";
+			// Reject the user, again could probably be done on this page but filler for now coz I'm editing things in the database
+			echo "<a href='authorize.php' class='btn btn-lg btn-default'>Reject</a>";
+			}
 		}
 		?>
           </div>
 
             <p class="lead" style="margin-top: 60px">
-              <a href="logout.php" class="btn btn-lg">Logout</a> || <a href="forget.php" class="btn btn-lg">Forget me</a>
-                <?php if ($permissions[ispermitted] == 0) { echo " || <a href='request.php' class='btn btn-lg'>Request access</a>"; } ?>
+              <a href="logout.php" class="btn btn-lg">Logout</a> || <a href="forget.php" class="btn btn-lg">Forget my account</a>
             </p>
 
 

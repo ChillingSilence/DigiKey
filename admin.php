@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE
 */
 
+
 session_start();
 require_once dirname(__FILE__) . "/config.php";
 require_once dirname(__FILE__) . "/classes/users.php";
@@ -44,10 +45,12 @@ $permissions = $user->get_permissions();
 // Check how many admin users there are
 $adminusers = $user->get_an_admin();
 if(strlen($adminusers[fio]) == 0) {
+	// If there's no admin users, then make this user the initial admin
 	$user->initialadmin($address);
 	}
 
 if(strlen($adminusers[fio]) > 0) {
+	// If there's already an admin user, the forward this person back to the index.php page
 	header ('location: index.php');
 	exit;
 	}

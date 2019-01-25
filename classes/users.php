@@ -83,7 +83,7 @@ class token_user {
      * @param $nonce
      * @param $address
      * @return bool|mysqli_result
-     * ispermitted uses 0 for no, 1 for requested, 2 for yes, 3 for rejected
+     * ispermitted uses 0 for unapproved, 1 for approved, 2 for rejected
      */
     public function requestaccess($info) {
         return $this->_mysqli->query(sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users SET ispermitted = '1' WHERE addr = '%s' ", $this->_mysqli->real_escape_string($this->addr)));
@@ -95,7 +95,7 @@ class token_user {
      * @param $nonce
      * @param $address
      * @return bool|mysqli_result
-     * ispermitted uses 0 for no, 1 for requested, 2 for yes, 3 for rejected
+     * ispermitted uses 0 for unapproved, 1 for approved, 2 for rejected
      */
     public function grantaccess($info) {
         return $this->_mysqli->query(sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users SET ispermitted = '%s' WHERE addr = '%s' ", $this->_mysqli->real_escape_string($info['ispermitted']), $this->_mysqli->real_escape_string($this->addr)));
@@ -103,7 +103,7 @@ class token_user {
 
 
     /**
-     * Forget some user
+     * Forget the user
      *
      * @param $address
      * @return bool|mysqli_result
@@ -113,7 +113,7 @@ class token_user {
     }
 
     /**
-     * Get user info
+     * Get current user info
      *
      * @return array
      */
@@ -141,12 +141,12 @@ class token_user {
     }
 
     /**
-     * Get pending users
+     * Get pending users that need to be allowed / denied
      *
      * @return array
      */
     public function get_pending_requests() {
-        $result = $this->_mysqli->query($sql = sprintf("SELECT addr,fio FROM " . DIGIID_TBL_PREFIX . "users WHERE ispermitted='1'", $this->_mysqli->real_escape_string($this->addr)));
+        $result = $this->_mysqli->query($sql = sprintf("SELECT addr,fio FROM " . DIGIID_TBL_PREFIX . "users WHERE ispermitted='0'", $this->_mysqli->real_escape_string($this->addr)));
         if($result) {
             $row = $result->fetch_assoc();
             if(count($row)) return $row;
