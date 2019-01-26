@@ -38,12 +38,31 @@ $address = $_SESSION['user']['address'];
 $user_info = $_SESSION['user']['info'];
 $user = new token_user($_SESSION['user']['address']);
 
+// Change state of showing all
+if (isset($_GET['show_all']))
+	$_SESSION['show_all'] = intval($_GET['show_all']);
+$show_all = $_SESSION['show_all'];
+
 // Get current permission-levels, this needs to be done first before anything further
 $permissions = $user->get_permissions();
 
-
-
-
+// Admin also may authorize or reject
+if ($permissions['isadmin'] && isset($_REQUEST['act'])) {
+	switch ($_REQUEST['act']) {
+		case 'change_user_state':
+			// ?state=ispermitted[,isadmin]
+			$new_state = explode(',', $_REQUEST['state']);
+			// ispermitted
+			if (isset($new_state[0]))
+			    $user->grantaccess($_REQUEST['addr'], $new_state[0]);
+			// isadmin
+			if (isset($new_state[1]))
+			    $user->grantadmin($_REQUEST['addr'], $new_state[1]);
+			break;
+	}
+	header ('location: dashboard.php');
+	exit;
+}
 
 ?>
 <!DOCTYPE html>
@@ -110,13 +129,13 @@ $permissions = $user->get_permissions();
 
             <p class="lead" style="margin-top: 40px">
 		<?php
-		if ($permissions[ispermitted] == 0) {
+		if ($permissions['ispermitted'] == 0) {
 			echo "Your access request is pending approval by an administrator. Please ask your admin to approve / deny your request";
 			}
-		else if ($permissions[ispermitted] == 1) {
+		else if ($permissions['ispermitted'] == 1 || $permissions['isadmin'] == 1) {
 			// We only have the one "unlock" at present with unlock.php automatically firing the unlock mechanism, but this can easily be modified in future for further expansion / multiple doors
 			// This could probably be done on this page itself, but I have a feeling that making it a new page will be better for extensibility in-future
-			echo "<a href='unlock.php' class='btn btn-lg btn-default'>Unlock the door</a>";
+			//echo "<a class='btn btn-lg btn-default'>Unlock the door</a>";
 			}
 		else {
 			// Presume the user has been rejected because anything other than 1 or 2 is a no-go
@@ -127,27 +146,63 @@ $permissions = $user->get_permissions();
             </p>
 
 	<p class="lead" style="margin-top: 40px">
-	<?php if ($permissions[isadmin] == 1) { echo "You're an admin! You can authorize additional users once they've performed an initial log-in.<br />"; } ?>
-	<?php if ($permissions[isadmin] == 1) {
-		$pending_requests = $user->get_pending_requests();
-		print_r($pending_request);
-		if (strlen($pending_request[fio] > 1)) {
+	<?php if ($permissions['isadmin'] == 1) :
+		$only_pending_btn_class	= $show_all ? 'primary':'';
+		$show_all_btn_class	= !$show_all ? 'primary':'';
+?>
+		You're an admin! You can authorize additional users once they've performed an initial log-in.<br />
+
+		<p>
+			<a class="btn btn-<?php echo $only_pending_btn_class ?>" href="?show_all=1" role="button">PENDING ONLY</a>
+			<a class="btn btn-<?php echo $show_all_btn_class ?>" href="?show_all=0" role="button">ALL USERS</a>
+		</p>
+
+		<?php 
+		$requests = $show_all ? $user->get_pending_requests() : $user->get_users_list();
+		foreach ($requests as $line) {
 			// There must be a user who wants access so we do them one at a time
 			// We do it this way for two reasons:
 			// #1 I'm lazy and can't be bothered making the code through all of them at once
 			// #2 It looks better from a UI perspective at this point and again, I'm too lazy to fit it all in on one page
-			echo "<br />Would you like to allow " . $pending_requests[fio] ." access?<br /><br />";
+			$line['isadmin_text']	= $line['isadmin'] ? 'admin':'';
+
 			// Authorize the user, could probably be done on this page but filler link for now
-			echo "<a href='authorize.php' class='btn btn-lg'>Authorize</a>";
 			// Reject the user, again could probably be done on this page but filler for now coz I'm editing things in the database
-			echo "<a href='authorize.php' class='btn btn-lg btn-default'>Reject</a>";
-			}
+			$remove_or_make_admin = $line['isadmin']>0 ? 0:1;
+			$authorized_btn_class	= ($line['ispermitted'] == 1) ? 'success':'default';
+			$rejected_btn_class	= ($line['ispermitted'] == 2) ? 'success':'default';
+			$admin_btn_class	= ($line['isadmin'] == 1) ? 'success':'default';
+
+			echo <<<HTML
+			<table class="table table-responsive" style="text-align:left">
+			<tbody>
+			<tr>
+			<td width="100%"><span class="lead">{$line['fio']}</span></td>
+			<td>
+			    <span>{$line['addr']}</span>
+			</td>
+			<td nowrap>
+				<a href='?act=change_user_state&addr={$line['addr']}&state=1'
+				    class='btn btn-$authorized_btn_class'>Authorized</a>
+				<a href='?act=change_user_state&addr={$line['addr']}&state=2'
+				    class='btn btn-$rejected_btn_class'>Rejected</a>
+				<a href='?act=change_user_state&addr={$line['addr']}&state=1,{$remove_or_make_admin}'
+				    class='btn btn-$admin_btn_class'>Admin</a></td>
+			</tr>
+			</tbody>
+			</table>
+
+			<!--<p class="">Would you like to allow {$line['fio']} {$line['isadmin_text']} access? His address is {$line['addr']} </p>
+			<a href='authorize.php' class='btn btn-lg btn-default'>Authorize</a>
+			<a href='authorize.php' class='btn btn-lg'>Reject</a></p>-->
+HTML;
 		}
 		?>
+	<?php endif ?>
           </div>
 
             <p class="lead" style="margin-top: 60px">
-              <a href="logout.php" class="btn btn-lg">Logout</a> || <a href="forget.php" class="btn btn-lg">Forget my account</a>
+              <a href="logout.php" class="btn btn-lg">Logout</a><?= (!$user->is_banned()) ? '|| <a href="forget.php" class="btn btn-lg">Forget my account</a>' : '' ?>
             </p>
 
 
