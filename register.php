@@ -31,7 +31,11 @@ if (isset($_SESSION['user']['address']))
 {
 	// Save it
 	$user = new token_user($_SESSION['user']['address']);
+
+	// If there's no admin users, then make this user the initial admin
+	$is_first = $user->in_empty_list();
 	$user->insert ($_POST);
+	if ($is_first) $user->initial_admin();
 	//$dao = new DAO();
 	//$dao->remove($nonce);
 	$_SESSION['user']['info'] = $user->get_info ();
