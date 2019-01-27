@@ -83,10 +83,9 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <link rel="stylesheet" type="text/css" href="css/dashboard.css">
 
     <!-- Custom styles for this template -->
-    <link href="css/dashboard.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/dashboard.css?2701">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -154,8 +153,8 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 	// Show the Authorized User stuff, like a button to open a door etc
 		if ($action_allowed) {
 		echo <<<HTML
-		<p>Congratulations, you are authorized to access this site.</p>
-		<p><a href='unlock.php' class='btn btn-lg btn-default'>Unlock the door</a></p><br />
+		<p class="lead">Congratulations, you are authorized to access.<br />
+		<a href='unlock.php' class='btn btn-lg btn-default'>Unlock the door</a></p><br />
 HTML;
 		}
 
@@ -166,7 +165,7 @@ HTML;
 		$only_pending_btn_class	= !$show_all ? 'primary':'';
 		$show_all_btn_class	= $show_all ? 'primary':'';
 ?>
-		You're an admin! You can authorize additional users once they've performed an initial log-in.<br />
+		<p class="lead">You're an admin! You can authorize additional users once they've performed an initial log-in.</p>
 
 		<p>
 			<a class="btn btn-<?php echo $only_pending_btn_class ?>" href="?show_all=0" role="button">PENDING ONLY</a>
@@ -213,17 +212,13 @@ HTML;
 			</tr>
 			</tbody>
 			</table>
-
-			<!--<p class="">Would you like to allow {$line['fio']} {$line['isadmin_text']} access? His address is {$line['addr']} </p>
-			<a href='authorize.php' class='btn btn-lg btn-default'>Authorize</a>
-			<a href='authorize.php' class='btn btn-lg'>Reject</a></p>-->
 HTML;
 		}
 		?>
 	<?php endif ?>
           </div>
 
-            <p class="lead" style="margin-top: 60px">
+            <p class="lead" style="margin-top: 20px">
               <a href="logout.php" class="btn btn-lg">Logout</a><?= (!$user->is_banned()) ? '|| <a href="forget.php" class="btn btn-lg">Forget my account</a>' : '' ?>
             </p>
 
