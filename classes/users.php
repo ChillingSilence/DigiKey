@@ -194,11 +194,20 @@ class token_user {
     }
 
     /**
+     * Get non rejected users list
+     *
+     * @return array
+     */
+    public function get_nonrejected_list() {
+        return $this->get_users_list(null, null, REJECTED_USER);
+    }
+
+    /**
      * Get all users
      *
      * @return array
      */
-    public function get_users_list($permitted=null, $admin=null) {
+    public function get_users_list($permitted=null, $admin=null, $notpermitted=null) {
         // Query all
         $result = array ();
         $sql = "SELECT `addr`, `fio`, `isadmin`, `ispermitted` FROM " . DIGIID_TBL_PREFIX . "users";
@@ -207,6 +216,7 @@ class token_user {
         $conditions = array ();
         if ($permitted !== null) $conditions[] = '`ispermitted` = ' . intval($permitted);
         if ($admin !== null) $conditions[] = '`isadmin` = ' . intval($admin);
+        if ($notpermitted !== null) $conditions[] = '`ispermitted` != ' . intval($notpermitted);
         $where = implode (' AND ', $conditions);
         if ($where != '') $sql .= " WHERE $where";
 

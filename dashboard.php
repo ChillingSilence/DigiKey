@@ -39,9 +39,9 @@ $user_info = $_SESSION['user']['info'];
 $user = new token_user($_SESSION['user']['address']);
 
 // Change state of showing all
-if (isset($_GET['show_all']))
-	$_SESSION['show_all'] = intval($_GET['show_all']);
-$show_all = $_SESSION['show_all'];
+if (isset($_GET['show']))
+	$_SESSION['show'] = $_GET['show'];
+$show = $_SESSION['show'];
 
 // Get current permission-levels, this needs to be done first before anything further
 $permissions = $user->get_permissions();
@@ -85,7 +85,7 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
-    <link rel="stylesheet" type="text/css" href="css/dashboard.css?2701">
+    <link rel="stylesheet" type="text/css" href="css/dashboard.css?27019">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -162,20 +162,27 @@ HTML;
 
 	// Show the admin-only stuff
 		if ($permissions['isadmin'] == ADMIN_USER) :
-		$only_pending_btn_class	= !$show_all ? 'primary':'';
-		$show_all_btn_class	= $show_all ? 'primary':'';
+		$only_pending_btn_class	= $show == 'PENDING' ? 'primary':'';
+		$not_rejected_btn_class = $show == 'NONREJECTED' ? 'primary':'';
+		$show_all_btn_class	= $show == 'ALL' ? 'primary':'';
 ?>
 		<p class="lead">You're an admin! You can authorize additional users once they've performed an initial log-in.</p>
 
 		<p>
-			<a class="btn btn-<?php echo $only_pending_btn_class ?>" href="?show_all=0" role="button">PENDING ONLY</a>
-			<a class="btn btn-<?php echo $show_all_btn_class ?>" href="?show_all=1" role="button">ALL USERS</a>
+			<a class="btn btn-<?php echo $only_pending_btn_class ?>" href="?show=PENDING" role="button">PENDING ONLY</a>
+			<a class="btn btn-<?php echo $not_rejected_btn_class ?>" href="?show=NONREJECTED" role="button">NON REJECTED</a>
+			<a class="btn btn-<?php echo $show_all_btn_class ?>" href="?show=ALL" role="button">ALL USERS</a>
 		</p>
 
 		<?php
+		switch ($show) {
+			case 'PENDING':		$requests = $user->get_pending_requests();	break;
+			case 'NONREJECTED':	$requests = $user->get_nonrejected_list();	break;
+			case 'ALL':		$requests = $user->get_users_list();		break;
+			default:		$requests = array ();
+		}
+
 		$const = get_defined_constants();
-		$requests = $show_all ? $user->get_users_list() : $user->get_pending_requests();
-		//print $show_all ? ' get list ' : ' pending ';
 		foreach ($requests as $line) {
 			// There must be a user who wants access so we do them one at a time
 			// We do it this way for two reasons:
@@ -195,7 +202,7 @@ HTML;
 				: " onclick='javascript:if (!confirm(\"You will lost access. Are you sure?\")) return false'";
 
 			echo <<<HTML
-			<table class="table table-responsive" style="text-align:left">
+			<table class="table" style="text-align:left">
 			<tbody>
 			<tr>
 			<td width="100%"><span class="lead">{$line['fio']}</span></td>
