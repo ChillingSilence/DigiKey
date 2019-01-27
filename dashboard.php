@@ -132,17 +132,18 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 
             <p class="lead" style="margin-top: 40px">
 		<?php
-		if ($permissions['ispermitted'] == PENDING_USER) {
+		$action_allowed = false;
+		if ($permissions['ispermitted'] == REJECTED_USER) {
+			// Presume the user has been rejected because anything other than 1 or 2 is a no-go
+			echo "Sorry your request for permission has been denied.";
+			}
+		else if ($permissions['ispermitted'] == PENDING_USER) {
 			echo "Your access request is pending approval by an administrator. Please ask your admin to approve / deny your request";
 			}
 		else if ($permissions['ispermitted'] == AUTHORIZED_USER || $permissions['isadmin'] == ADMIN_USER) {
 			// We only have the one "unlock" at present with unlock.php automatically firing the unlock mechanism, but this can easily be modified in future for further expansion / multiple doors
 			// This could probably be done on this page itself, but I have a feeling that making it a new page will be better for extensibility in-future
-			//echo "<a class='btn btn-lg btn-default'>Unlock the door</a>";
-			}
-		else {
-			// Presume the user has been rejected because anything other than 1 or 2 is a no-go
-			echo "Sorry your request for permission has been denied.";
+			$action_allowed = true;
 			}
 		?>
 
@@ -151,7 +152,7 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 	<p class="lead" style="margin-top: 40px">
 	<?php
 	// Show the Authorized User stuff, like a button to open a door etc
-		if ($permissions['ispermitted'] == AUTHORIZED_USER) {
+		if ($action_allowed) {
 		echo <<<HTML
 		<p>Congratulations, you are authorized to access this site.</p>
 		<p><a href='unlock.php' class='btn btn-lg btn-default'>Unlock the door</a></p><br />
