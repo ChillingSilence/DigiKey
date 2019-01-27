@@ -23,6 +23,12 @@ SOFTWARE
 
 require_once dirname(__FILE__) . "/../config.php";
 
+const PENDING_USER = 0;
+const AUTHORIZED_USER = 1;
+const REJECTED_USER = 2;
+const REGULAR_USER = 0;
+const ADMIN_USER = 1;
+
 // Store and manage users info
 class token_user {
 
@@ -30,8 +36,8 @@ class token_user {
     private $addr;
     public function __construct($addr = null, $host = DIGIID_DB_HOST, $user = DIGIID_DB_USER, $pass = DIGIID_DB_PASS, $name = DIGIID_DB_NAME) {
         @$this->_mysqli = new mysqli($host, $user, $pass, $name);
-	if ($this->_mysqli->connect_errno) die ($this->_mysqli->connect_error);
-	$this->addr = $addr;
+        if ($this->_mysqli->connect_errno) die ($this->_mysqli->connect_error);
+        $this->addr = $addr;
 
         $this->checkInstalled();
     }
@@ -66,7 +72,11 @@ class token_user {
      * @return bool|mysqli_result
      */
     public function insert($info) {
-        return $this->_mysqli->query(sprintf("INSERT INTO " . DIGIID_TBL_PREFIX . "users (`addr`, `fio`) VALUES ('%s', '%s')", $this->_mysqli->real_escape_string($this->addr), $this->_mysqli->real_escape_string($info['fio'])));
+        return $this->_mysqli->query(sprintf("INSERT INTO " . DIGIID_TBL_PREFIX . "users"
+            . " (`addr`, `fio`) VALUES ('%s', '%s')",
+            $this->_mysqli->real_escape_string($this->addr), 
+            $this->_mysqli->real_escape_string($info['fio']))
+            );
     }
 
     /**
@@ -77,18 +87,11 @@ class token_user {
      * @return bool|mysqli_result
      */
     public function update($info) {
-        return $this->_mysqli->query(sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users SET fio = '%s' WHERE addr = '%s' ", $this->_mysqli->real_escape_string($info['fio']), $this->_mysqli->real_escape_string($this->addr)));
-    }
-
-    /**
-     * Request access to the system for the current user
-     *
-     * @param $info
-     * @return bool|mysqli_result
-     * ispermitted uses 0 for unapproved, 1 for approved, 2 for rejected
-     */
-    public function requestaccess($info) {
-        return $this->_mysqli->query(sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users SET ispermitted = 1 WHERE addr = '%s' AND ispermitted = 0", $this->_mysqli->real_escape_string($this->addr)));
+        return $this->_mysqli->query(sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users"
+            . " SET `fio` = '%s' WHERE `addr` = '%s' ",
+            $this->_mysqli->real_escape_string($info['fio']),
+            $this->_mysqli->real_escape_string($this->addr))
+            );
     }
 
     /**
@@ -100,7 +103,11 @@ class token_user {
      * ispermitted uses 0 for unapproved, 1 for approved, 2 for rejected
      */
     public function grantaccess($addr, $ispermitted) {
-        return $this->_mysqli->query(sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users SET ispermitted = %d WHERE addr = '%s' ", intval($ispermitted), $this->_mysqli->real_escape_string($addr)));
+        return $this->_mysqli->query(
+            sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users SET `ispermitted` = %d WHERE `addr` = '%s'",
+            intval($ispermitted),
+            $this->_mysqli->real_escape_string($addr))
+            );
     }
 
     /**
@@ -112,7 +119,11 @@ class token_user {
      * ispermitted uses 0 for unapproved, 1 for approved, 2 for rejected
      */
     public function grantadmin($addr, $isadmin) {
-        return $this->_mysqli->query(sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users SET isadmin = %d WHERE addr = '%s' ", intval($isadmin), $this->_mysqli->real_escape_string($addr)));
+        return $this->_mysqli->query(
+            sprintf("UPDATE " . DIGIID_TBL_PREFIX . "users SET `isadmin` = %d WHERE `addr` = '%s'",
+            intval($isadmin),
+            $this->_mysqli->real_escape_string($addr))
+            );
     }
 
     /**
@@ -121,7 +132,10 @@ class token_user {
      * @return bool|mysqli_result
      */
     public function delete() {
-        return $this->_mysqli->query(sprintf("DELETE FROM " . DIGIID_TBL_PREFIX . "users WHERE addr = '%s' ", $this->_mysqli->real_escape_string($this->addr)));
+        return $this->_mysqli->query(
+            sprintf("DELETE FROM " . DIGIID_TBL_PREFIX . "users WHERE `addr` = '%s'",
+            $this->_mysqli->real_escape_string($this->addr))
+            );
     }
 
     /**
@@ -130,7 +144,11 @@ class token_user {
      * @return array
      */
     public function get_info() {
-        $result = $this->_mysqli->query($sql = sprintf("SELECT fio, ispermitted, isadmin FROM " . DIGIID_TBL_PREFIX . "users WHERE addr = '%s'", $this->_mysqli->real_escape_string($this->addr)));
+        $result = $this->_mysqli->query(
+            sprintf("SELECT `fio`, `ispermitted`, `isadmin` FROM " . DIGIID_TBL_PREFIX . "users"
+            . " WHERE `addr` = '%s'",
+            $this->_mysqli->real_escape_string($this->addr))
+            );
         if($result) {
             $row = $result->fetch_assoc();
             if(count($row)) return $row;
@@ -144,7 +162,11 @@ class token_user {
      * @return array
      */
     public function get_permissions() {
-        $result = $this->_mysqli->query($sql = sprintf("SELECT isadmin,ispermitted FROM " . DIGIID_TBL_PREFIX . "users WHERE addr = '%s'", $this->_mysqli->real_escape_string($this->addr)));
+        $result = $this->_mysqli->query(
+            sprintf("SELECT `isadmin`, `ispermitted` FROM " . DIGIID_TBL_PREFIX . "users"
+            . " WHERE `addr` = '%s'",
+            $this->_mysqli->real_escape_string($this->addr))
+            );
         if($result) {
             $row = $result->fetch_assoc();
             if(count($row)) return $row;
@@ -159,7 +181,7 @@ class token_user {
      */
     public function is_banned() {
         $perm = $this->get_permissions();
-        return ($perm['ispermitted'] == 2);
+        return ($perm['ispermitted'] == REJECTED_USER);
     }
 
     /**
@@ -168,10 +190,7 @@ class token_user {
      * @return array
      */
     public function get_pending_requests() {
-        $result = array ();
-        $query = $this->_mysqli->query($sql = "SELECT addr, fio, isadmin, ispermitted FROM " . DIGIID_TBL_PREFIX . "users WHERE ispermitted = 0 AND isadmin != 1");
-        while ( $line = $query->fetch_assoc() ) $result[] = $line;
-        return $result;
+        return $this->get_users_list(PENDING_USER, REGULAR_USER);
     }
 
     /**
@@ -179,10 +198,20 @@ class token_user {
      *
      * @return array
      */
-    public function get_users_list() {
+    public function get_users_list($permitted=null, $admin=null) {
+        // Query all
         $result = array ();
-        $query = $this->_mysqli->query($sql = "SELECT addr, fio, isadmin, ispermitted FROM " . DIGIID_TBL_PREFIX . "users");
-        while ( $line = $query->fetch_assoc() ) $result[] = $line;
+        $sql = "SELECT `addr`, `fio`, `isadmin`, `ispermitted` FROM " . DIGIID_TBL_PREFIX . "users";
+
+        // under conditions (if it set)
+        $conditions = array ();
+        if ($permitted != null) $conditions[] = array ('`ispermitted` = %d' % $permitted);
+        if ($admin != null) $conditions[] = array ('`isadmin` = %d' % $admin);
+        if ($where = implode (' AND ', $conditions)) $sql .= " WHERE $where";
+
+        // Collect
+        $query = $this->_mysqli->query($sql);
+        while ($line = $query->fetch_assoc()) $result[] = $line;
         return $result;
     }
 
@@ -193,8 +222,10 @@ class token_user {
      */
     public function in_empty_list() {
         try {
-            $result = $this->_mysqli->query($sql = sprintf("SELECT (count(*)+1) AS cnt FROM " . DIGIID_TBL_PREFIX . "users"));
-            if($result) {
+            $result = $this->_mysqli->query(
+                "SELECT (count(*)+1) AS cnt FROM " . DIGIID_TBL_PREFIX . "users"
+                );
+            if ($result) {
                 $row = $result->fetch_assoc();
                 return (intval($row['cnt']) == 1);
             }
@@ -213,10 +244,8 @@ class token_user {
      * isadmin uses 0 for normal user and 1 for administrative user
      */
     public function initial_admin() {
-        return $this->grantadmin($this->addr, 1) && $this->grantaccess($this->addr, 1);
+        return $this->grantadmin($this->addr, ADMIN_USER) && $this->grantaccess($this->addr, AUTHORIZED_USER);
     }
-
-
 
 
 }
