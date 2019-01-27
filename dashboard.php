@@ -127,7 +127,7 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 		// That said the user could just request that we "forget" their account, and sign up again using an additional identifier such as a surname if it was really an issue
 		// It's fine for now though :)
 		?>
-            <p class="lead">Your Digi-ID for this site:<br /><?= $address ?></p>
+            <p class="lead">Your Digi-ID for this site: <?= $address ?></p>
 
             <p class="lead" style="margin-top: 40px">
 		<?php
