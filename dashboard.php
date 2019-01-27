@@ -132,10 +132,10 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 
             <p class="lead" style="margin-top: 40px">
 		<?php
-		if ($permissions['ispermitted'] == 0) {
+		if ($permissions['ispermitted'] == PENDING_USER) {
 			echo "Your access request is pending approval by an administrator. Please ask your admin to approve / deny your request";
 			}
-		else if ($permissions['ispermitted'] == 1 || $permissions['isadmin'] == 1) {
+		else if ($permissions['ispermitted'] == APPROVED_USER || $permissions['isadmin'] == ADMIN_USER) {
 			// We only have the one "unlock" at present with unlock.php automatically firing the unlock mechanism, but this can easily be modified in future for further expansion / multiple doors
 			// This could probably be done on this page itself, but I have a feeling that making it a new page will be better for extensibility in-future
 			//echo "<a class='btn btn-lg btn-default'>Unlock the door</a>";
@@ -149,7 +149,19 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
             </p>
 
 	<p class="lead" style="margin-top: 40px">
-	<?php if ($permissions['isadmin'] == 1) :
+	<?php
+	// Show the Authorized User stuff, like a button to open a door etc
+		if ($permissions['ispermitted'] == AUTHORIZED_USER) {
+		echo <<<HTML
+		<p>Congratulations, you are authorized to access this site.</p>
+		<p><a href='unlock.php' class='btn btn-lg btn-default'>Unlock the door</a></p><br />
+HTML;
+		}
+
+
+
+	// Show the admin-only stuff
+		if ($permissions['isadmin'] == ADMIN_USER) :
 		$only_pending_btn_class	= $show_all ? 'primary':'';
 		$show_all_btn_class	= !$show_all ? 'primary':'';
 ?>
@@ -160,7 +172,8 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 			<a class="btn btn-<?php echo $show_all_btn_class ?>" href="?show_all=0" role="button">ALL USERS</a>
 		</p>
 
-		<?php 
+		<?php
+		$const = get_defined_constants();
 		$requests = $show_all ? $user->get_pending_requests() : $user->get_users_list();
 		foreach ($requests as $line) {
 			// There must be a user who wants access so we do them one at a time
@@ -173,8 +186,8 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 			// Reject the user, again could probably be done on this page but filler for now coz I'm editing things in the database
 			$remove_or_make_admin = $line['isadmin']>0 ? 0:1;
 			$authorized_btn_class	= ($line['ispermitted'] == AUTHORIZED_USER) ? 'success':'default';
-			$rejected_btn_class	= ($line['ispermitted'] == REJECTED_USER) ? 'success':'default';
-			$admin_btn_class	= ($line['isadmin'] == ADMIN_USER) ? 'success':'default';
+			$rejected_btn_class	= ($line['ispermitted'] == REJECTED_USER) ? 'danger':'default';
+			$admin_btn_class	= ($line['isadmin'] == ADMIN_USER) ? 'warning':'default';
 
 			// Alert if admin remove own access
 			$alert = ($line['addr'] != $_SESSION['user']['address']) ? ''
@@ -189,11 +202,11 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 			    <span>{$line['addr']}</span>
 			</td>
 			<td nowrap>
-				<a href='?act=change_user_state&addr={$line['addr']}&state=1'
+				<a href='?act=change_user_state&addr={$line['addr']}&state={$const['AUTHORIZED_USER']}'
 				    class='btn btn-$authorized_btn_class'>Authorized</a>
-				<a href='?act=change_user_state&addr={$line['addr']}&state=2'
+				<a href='?act=change_user_state&addr={$line['addr']}&state={$const['REJECTED_USER']}'
 				    class='btn btn-$rejected_btn_class' $alert>Rejected</a>
-				<a href='?act=change_user_state&addr={$line['addr']}&state=1,{$remove_or_make_admin}'
+				<a href='?act=change_user_state&addr={$line['addr']}&state={$const['ADMIN_USER']},{$remove_or_make_admin}'
 				    class='btn btn-$admin_btn_class' $alert>Admin</a></td>
 			</tr>
 			</tbody>
