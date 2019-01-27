@@ -146,7 +146,19 @@ if ($permissions['isadmin'] && isset($_REQUEST['act'])) {
             </p>
 
 	<p class="lead" style="margin-top: 40px">
-	<?php if ($permissions['isadmin'] == 1) :
+	<?php
+	// Show the Authorized User stuff, like a button to open a door etc
+		if ($permissions['ispermitted'] == 1) {
+		echo <<<HTML
+		<p>Congratulations, you are authorized to access this site.</p>
+		<p><a href='unlock.php' class='btn btn-lg btn-default'>Unlock the door</a></p><br />
+HTML;
+		}
+
+
+
+	// Show the admin-only stuff
+		if ($permissions['isadmin'] == 1) :
 		$only_pending_btn_class	= $show_all ? 'primary':'';
 		$show_all_btn_class	= !$show_all ? 'primary':'';
 ?>
@@ -157,7 +169,7 @@ if ($permissions['isadmin'] && isset($_REQUEST['act'])) {
 			<a class="btn btn-<?php echo $show_all_btn_class ?>" href="?show_all=0" role="button">ALL USERS</a>
 		</p>
 
-		<?php 
+		<?php
 		$requests = $show_all ? $user->get_pending_requests() : $user->get_users_list();
 		foreach ($requests as $line) {
 			// There must be a user who wants access so we do them one at a time
@@ -170,8 +182,8 @@ if ($permissions['isadmin'] && isset($_REQUEST['act'])) {
 			// Reject the user, again could probably be done on this page but filler for now coz I'm editing things in the database
 			$remove_or_make_admin = $line['isadmin']>0 ? 0:1;
 			$authorized_btn_class	= ($line['ispermitted'] == 1) ? 'success':'default';
-			$rejected_btn_class	= ($line['ispermitted'] == 2) ? 'success':'default';
-			$admin_btn_class	= ($line['isadmin'] == 1) ? 'success':'default';
+			$rejected_btn_class	= ($line['ispermitted'] == 2) ? 'danger':'default';
+			$admin_btn_class	= ($line['isadmin'] == 1) ? 'warning':'default';
 
 			echo <<<HTML
 			<table class="table table-responsive" style="text-align:left">
@@ -199,6 +211,7 @@ HTML;
 		}
 		?>
 	<?php endif ?>
+
           </div>
 
             <p class="lead" style="margin-top: 60px">
