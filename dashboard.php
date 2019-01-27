@@ -135,7 +135,7 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 		if ($permissions['ispermitted'] == PENDING_USER) {
 			echo "Your access request is pending approval by an administrator. Please ask your admin to approve / deny your request";
 			}
-		else if ($permissions['ispermitted'] == APPROVED_USER || $permissions['isadmin'] == ADMIN_USER) {
+		else if ($permissions['ispermitted'] == AUTHORIZED_USER || $permissions['isadmin'] == ADMIN_USER) {
 			// We only have the one "unlock" at present with unlock.php automatically firing the unlock mechanism, but this can easily be modified in future for further expansion / multiple doors
 			// This could probably be done on this page itself, but I have a feeling that making it a new page will be better for extensibility in-future
 			//echo "<a class='btn btn-lg btn-default'>Unlock the door</a>";
@@ -162,19 +162,20 @@ HTML;
 
 	// Show the admin-only stuff
 		if ($permissions['isadmin'] == ADMIN_USER) :
-		$only_pending_btn_class	= $show_all ? 'primary':'';
-		$show_all_btn_class	= !$show_all ? 'primary':'';
+		$only_pending_btn_class	= !$show_all ? 'primary':'';
+		$show_all_btn_class	= $show_all ? 'primary':'';
 ?>
 		You're an admin! You can authorize additional users once they've performed an initial log-in.<br />
 
 		<p>
-			<a class="btn btn-<?php echo $only_pending_btn_class ?>" href="?show_all=1" role="button">PENDING ONLY</a>
-			<a class="btn btn-<?php echo $show_all_btn_class ?>" href="?show_all=0" role="button">ALL USERS</a>
+			<a class="btn btn-<?php echo $only_pending_btn_class ?>" href="?show_all=0" role="button">PENDING ONLY</a>
+			<a class="btn btn-<?php echo $show_all_btn_class ?>" href="?show_all=1" role="button">ALL USERS</a>
 		</p>
 
 		<?php
 		$const = get_defined_constants();
-		$requests = $show_all ? $user->get_pending_requests() : $user->get_users_list();
+		$requests = $show_all ? $user->get_users_list() : $user->get_pending_requests();
+		//print $show_all ? ' get list ' : ' pending ';
 		foreach ($requests as $line) {
 			// There must be a user who wants access so we do them one at a time
 			// We do it this way for two reasons:
