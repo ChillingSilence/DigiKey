@@ -47,7 +47,10 @@ $show_all = $_SESSION['show_all'];
 $permissions = $user->get_permissions();
 
 // Admin also may authorize or reject
-if ($permissions['isadmin'] && isset($_REQUEST['act'])) {
+if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
+	&& $permissions['isadmin'] /* admin */
+	&& isset($_REQUEST['act'])) /* want action */
+{
 	switch ($_REQUEST['act']) {
 		case 'change_user_state':
 			// ?state=ispermitted[,isadmin]
@@ -164,14 +167,14 @@ if ($permissions['isadmin'] && isset($_REQUEST['act'])) {
 			// We do it this way for two reasons:
 			// #1 I'm lazy and can't be bothered making the code through all of them at once
 			// #2 It looks better from a UI perspective at this point and again, I'm too lazy to fit it all in on one page
-			$line['isadmin_text']	= $line['isadmin'] ? 'admin':'';
+			$line['isadmin_text']	= ($line['isadmin'] == ADMIN_USER) ? 'admin':'';
 
 			// Authorize the user, could probably be done on this page but filler link for now
 			// Reject the user, again could probably be done on this page but filler for now coz I'm editing things in the database
 			$remove_or_make_admin = $line['isadmin']>0 ? 0:1;
-			$authorized_btn_class	= ($line['ispermitted'] == 1) ? 'success':'default';
-			$rejected_btn_class	= ($line['ispermitted'] == 2) ? 'success':'default';
-			$admin_btn_class	= ($line['isadmin'] == 1) ? 'success':'default';
+			$authorized_btn_class	= ($line['ispermitted'] == AUTHORIZED_USER) ? 'success':'default';
+			$rejected_btn_class	= ($line['ispermitted'] == REJECTED_USER) ? 'success':'default';
+			$admin_btn_class	= ($line['isadmin'] == ADMIN_USER) ? 'success':'default';
 
 			echo <<<HTML
 			<table class="table table-responsive" style="text-align:left">
