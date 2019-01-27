@@ -176,6 +176,10 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 			$rejected_btn_class	= ($line['ispermitted'] == REJECTED_USER) ? 'success':'default';
 			$admin_btn_class	= ($line['isadmin'] == ADMIN_USER) ? 'success':'default';
 
+			// Alert if admin remove own access
+			$alert = ($line['addr'] != $_SESSION['user']['address']) ? ''
+				: " onclick='javascript:if (!confirm(\"You will lost access. Are you sure?\")) return false'";
+
 			echo <<<HTML
 			<table class="table table-responsive" style="text-align:left">
 			<tbody>
@@ -188,9 +192,9 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
 				<a href='?act=change_user_state&addr={$line['addr']}&state=1'
 				    class='btn btn-$authorized_btn_class'>Authorized</a>
 				<a href='?act=change_user_state&addr={$line['addr']}&state=2'
-				    class='btn btn-$rejected_btn_class'>Rejected</a>
+				    class='btn btn-$rejected_btn_class' $alert>Rejected</a>
 				<a href='?act=change_user_state&addr={$line['addr']}&state=1,{$remove_or_make_admin}'
-				    class='btn btn-$admin_btn_class'>Admin</a></td>
+				    class='btn btn-$admin_btn_class' $alert>Admin</a></td>
 			</tr>
 			</tbody>
 			</table>
