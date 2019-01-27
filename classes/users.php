@@ -205,9 +205,10 @@ class token_user {
 
         // under conditions (if it set)
         $conditions = array ();
-        if ($permitted != null) $conditions[] = array ('`ispermitted` = %d' % $permitted);
-        if ($admin != null) $conditions[] = array ('`isadmin` = %d' % $admin);
-        if ($where = implode (' AND ', $conditions)) $sql .= " WHERE $where";
+        if ($permitted !== null) $conditions[] = '`ispermitted` = ' . intval($permitted);
+        if ($admin !== null) $conditions[] = '`isadmin` = ' . intval($admin);
+        $where = implode (' AND ', $conditions);
+        if ($where != '') $sql .= " WHERE $where";
 
         // Collect
         $query = $this->_mysqli->query($sql);
