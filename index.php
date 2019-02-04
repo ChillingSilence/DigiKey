@@ -126,11 +126,12 @@ if(!$result)
 					</div>
 					</form>
 				</div>
-
-				<div class="login-more" style="background-image: url(images/bg-01.jpg);">
+				<div class="login-more" style="background-image: url(images/door_id.jpg);">
 				</div>
 			</div>
 		</div>
+	</div>
+	<div id="source-link"><a href="https://github.com/ChillingSilence/digiid-php-authdemo" title="Download it in open source"><img src="images/open-source-code.png" /></a>
 	</div>
 	
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
