@@ -79,7 +79,7 @@ if ($permissions['ispermitted'] != REJECTED_USER /* not rejected */
     <meta name="author" content="">
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">
 
-    <title>DigiKey authentication</title>
+    <title>DigiQi authentication</title>
 
     <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
