@@ -126,7 +126,7 @@ if(!$result)
 					</div>
 					</form>
 				</div>
-				<div class="login-more" style="background-image: url(images/door_id.jpg);">
+				<div class="login-more">
 				</div>
 			</div>
 		</div>
